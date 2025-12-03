@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: pki-2fa-app
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      - TZ=UTC
+
+    volumes:
+      # Persistent decrypted seed storage
+      - seed-data:/data
+
+      # Cron output storage
+      - cron-output:/cron
+
+      # Mount key files (read-only)
+      - ./student_private.pem:/app/student_private.pem:ro
+      - ./student_public.pem:/app/student_public.pem:ro
+      - ./instructor_public.pem:/app/instructor_public.pem:ro
+
+      # Mount cron config file (already copied in Dockerfile, but this keeps it in sync)
+      - ./cron/2fa-cron:/app/cron/2fa-cron:ro
+
+    restart: unless-stopped
+
+volumes:
+  seed-data:
+  cron-output:
